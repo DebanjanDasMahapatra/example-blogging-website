@@ -55,7 +55,4 @@ app.use(function(err, req, res, next) {
   res.render("error");
 });
 
-app.listen(app.get("port"), () => {
-  console.log("Starting server at ..localhost:" + app.get("port"));
-});
 module.exports = app;
