@@ -1,58 +1,72 @@
 const User = require("../models/UserModel");
+const bcrypt = require("bcrypt");
 
-exports.create = (req, res) => {
-  console.log(req.body);
-  if (!req.body) {
-    return res.status(400).send({
-      message: "User Data cannot be empty"
-    });
-  }
+const salt = 12; //process.env.BCRYPT_SALT_ROUNDS;
 
-  const user = new User({
-    ...req.body
+exports.create = (user, hashPassword) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const newUser = new User({
+        ...user,
+        _id: Date.now(),
+        email: user.username,
+        password: hashPassword,
+      });
+
+      newUser
+        .save()
+        .then((data) => {
+          console.log("User Saved Successfully", data._doc);
+          resolve("success");
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
   });
+};
 
-  user
-    .save()
-    .then(data => {
-      res.send({ message: "User Saved Successfully" });
-      console.log("User Saved Successfully");
-    })
-    .catch(err => {
+exports.validate = (user, done) => {
+  User.find()
+    .then((users) => res.send(users))
+    .catch((err) => {
       res.status(500).send({
-        message: err.message || "Internal Server Error"
+        message: err.message || "Some error occurred while retrieving notes.",
       });
     });
 };
 
 exports.findAll = (req, res) => {
   User.find()
-    .then(users => res.send(users))
-    .catch(err => {
+    .then((users) => res.send(users))
+    .catch((err) => {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving notes."
+        message: err.message || "Some error occurred while retrieving notes.",
       });
     });
 };
 
 exports.findOne = (req, res) => {
   User.findById(req.params.userId)
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return res.status(404).send({
-          message: "Note not found with id " + req.params.userId
+          message: "Note not found with id " + req.params.userId,
         });
       }
       res.send(user);
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.kind === "ObjectId") {
         return res.status(404).send({
-          message: "Note not found with id " + req.params.userId
+          message: "Note not found with id " + req.params.userId,
         });
       }
       return res.status(500).send({
-        message: "Error retrieving user with id " + req.params.userId
+        message: "Error retrieving user with id " + req.params.userId,
       });
     });
 };
@@ -60,7 +74,7 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
-      message: "User content can not be empty"
+      message: "User content can not be empty",
     });
   }
 

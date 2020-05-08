@@ -42,23 +42,7 @@ mongoose
 
 //get all routes for User
 require("./routes/users")(app);
-
-app.post("/register", (req, res, next) => {
-  passport.authenticate("register", (err, user, info) => {
-    res.status(200).send({ message: "User is registered" });
-  })(req, res, next);
-});
-
-app.post("/login", (req, res, next) => {
-  passport.authenticate("login", (err, user, info) => {
-    const token = jwt.sign({ id: user.username }, process.env.JWT_SECRET, {
-      expiresIn: 60 * 60
-    });
-    res
-      .status(200)
-      .send({ auth: true, token, message: "User Found and logged in" });
-  })(req, res, next);
-});
+require("./routes/index")(app);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
