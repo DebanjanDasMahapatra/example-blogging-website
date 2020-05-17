@@ -1,7 +1,7 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 
-const salt = 12; //process.env.BCRYPT_SALT_ROUNDS;
+const salt = parseInt(process.env.BCRYPT_SALT_ROUNDS);
 
 exports.create = (user, hashPassword) => {
   return new Promise((resolve, reject) => {
@@ -16,7 +16,6 @@ exports.create = (user, hashPassword) => {
       newUser
         .save()
         .then((data) => {
-          console.log("User Saved Successfully", data._doc);
           resolve("success");
         })
         .catch((err) => {
@@ -71,39 +70,41 @@ exports.findOne = (req, res) => {
     });
 };
 
-exports.update = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
+exports.update = (user) => {
+  if (!user) {
+    return {
       message: "User content can not be empty",
-    });
+    };
   }
 
-  //   User.findByIdAndUpdate(
-  //     req.params.userId,
-  //     {
-  //       title: req.body.title || "Untitled Note",
-  //       content: req.body.content
-  //     },
-  //     { new: true }
-  //   )
-  //     .then(note => {
-  //       if (!note) {
-  //         return res.status(404).send({
-  //           message: "Note not found with id " + req.params.noteId
-  //         });
-  //       }
-  //       res.send(note);
-  //     })
-  //     .catch(err => {
-  //       if (err.kind === "ObjectId") {
-  //         return res.status(404).send({
-  //           message: "Note not found with id " + req.params.noteId
-  //         });
-  //       }
-  //       return res.status(500).send({
-  //         message: "Error updating note with id " + req.params.noteId
-  //       });
-  //     });
+  return new Promise((res, rej) => {
+    User.findByIdAndUpdate(
+      user._id,
+      { firstName: user.firstName, lastName: user.lastName },
+      { new: true }
+    )
+      .then((data) => {
+        if (!data) {
+          res({
+            message: "User not found with id " + user._id,
+          });
+        } else {
+          res({
+            message: "success",
+          });
+        }
+      })
+      .catch((err) => {
+        if (err.kind === "ObjectId") {
+          rej({
+            message: "Note not found with id " + user._id,
+          });
+        }
+        rej({
+          message: "Error updating note with id " + user._id,
+        });
+      });
+  });
 };
 
 exports.delete = (req, res) => {
